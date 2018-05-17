@@ -42,7 +42,7 @@ for i=1:param.itmax
        %size(x_point(:,i,j));
        
        %Compute next step
-       x_point(:,i+1,j)=param.ts*(Fhome+Fvel+Finter+Fnoise);
+       x_point(:,i+1,j)=param.ts*(Fhome+Fvel+Finter+Fnoise)+x_point(:,i,j);
        x(:,i+1,j)=param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*x_point(:,i+1,j)+Fnoise*param.ts^3/3+param.ts*x_point(:,i,j)+x(:,i,j); 
    end
 end
@@ -65,4 +65,3 @@ if(disp)
 end
 xout=x;
 end
-
