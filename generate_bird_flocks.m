@@ -2,7 +2,6 @@ function [xout] = generate_bird_flocks(param, disp)
 x=zeros(2,param.itmax+1,param.N);
 x_point=zeros(2,param.itmax+1,param.N);
 %x_sec=zeros(2,param.itmax+1,param.N);
-Finter=[0;0];
 %init
 x(2,1,:)=linspace(-5,5,param.N);
 x(1,1,:)=linspace(3,3,param.N);
@@ -11,7 +10,7 @@ for i=1:param.itmax
    for j=1:param.N
 		norm_x = norm(x(:,i,j));
         norm_x_point = norm(x_point(:,i,j));
-       %Fhome
+       % Fhome
        if(0 <= norm_x && norm_x <= param.rf)
          fhome=-4*param.rp/(param.rf^2)*norm_x*(norm_x-param.rf);
        else
@@ -19,10 +18,10 @@ for i=1:param.itmax
        end
        Fhome=-x(:,i,j)*fhome;
        
-	   %Fvel
+	   % Fvel
        Fvel=x_point(:,i,j)*param.vp*(1-norm_x_point/param.v0);
        
-	   %Finter
+	   % Finter
        Finter=[0;0];
        for inter=1:param.N
            if (inter ~= j)
@@ -35,17 +34,16 @@ for i=1:param.itmax
                Finter=(x(:,i,inter)-x(:,i,j))*finter+Finter;
            end
        end
-       %size(Finter);
        
-	   %Noise
-	   noiserecord=randn([2 1]);
+	   % Noise
+	   Fnoise=randn([2 1])*param.sigmaN^2;
        %noiserecord=zeros([2 1]);
        %size(noiserecord);
        %size(x_point(:,i,j));
        
-       %Compute
-       x_point(:,i+1,j)=param.ts*(Fhome+Fvel+Finter)+noiserecord*param.sigmaN^2*param.ts;
-       x(:,i+1,j)=param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*x_point(:,i+1,j)+noiserecord*param.sigmaN^2*param.ts^3/3+param.ts*x_point(:,i,j)+x(:,i,j); 
+       %Compute next step
+       x_point(:,i+1,j)=param.ts*(Fhome+Fvel+Finter+Fnoise);
+       x(:,i+1,j)=param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*x_point(:,i+1,j)+Fnoise*param.ts^3/3+param.ts*x_point(:,i,j)+x(:,i,j); 
    end
 end
 
