@@ -20,7 +20,7 @@ xf=cell(param.N,param.itmax);
 CovarMatrixProcess=[param.sigmaN*param.ts^3/3 0 param.sigmaN*param.ts^2/2 0; 0 param.sigmaN*param.ts^3/3 0 param.sigmaN*param.ts^2/2;...
     param.sigmaN*param.ts^2/2 0 param.sigmaN*param.ts 0;0 param.sigmaN*param.ts^2/2 0 param.sigmaN*param.ts];
 %Covariance matrix of the observation
-RCovObser=[sigmaObs 0;0 sigmaObs];
+RCovObser=[sigmaObs^2 0;0 sigmaObs^2];
 %First Predicted covariance
 PredictCov=eye(4);
 %Initialize the estimator
@@ -28,7 +28,7 @@ x=linspace(0,0,param.itmax+1);
 y=linspace(0,0,param.itmax+1);
 xp=linspace(0,0,param.itmax+1);
 yp=linspace(0,0,param.itmax+1);
-x=3;y=rand*10-5;
+x(1)=3;y(1)=rand*10-5;
 xp=0.00001;yp=0.000001;
 
 %Observation operation here identity  but we only observe x and y and not
@@ -59,7 +59,7 @@ for i=1:param.itmax
        %Compute next step
        size( param.ts*(Fhome+Fvel+Fnoise')+[xp(i) yp(i)])
        Xpoint = param.ts*(Fhome+Fvel+Fnoise')+[xp(i) yp(i)];
-       xp(i+1)=Xpoint(1);
+       xp(i+1)=Xpoint(1);  %Bcos Matlab doesn't what double assignement
        yp(i+1)=Xpoint(2);
        Xpaspoint = param.ts^2/2*(Fhome+Fvel)+param.ts*[xp(i) yp(i)]+Fnoise'*param.ts^3/3+[x(i) y(i)]; 
        x(i+1)=Xpaspoint(1);
