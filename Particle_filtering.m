@@ -19,7 +19,7 @@ function [xf] = Particle_filtering(param, Np, y, sigmaObs, disp)
 
 %% Parameters, play with them
 
-% none yet
+N_tres = Np/3;
 
 %% *** SEQUENTIAL MONTE CARLO METHOD ***
 
@@ -120,7 +120,7 @@ for k = 1:param.itmax+1 %for each time step
     
     % ** Step 6 : Regularize by adding noise
     % If Neff < n/3, we use the regularized SMC
-    if 1/sum(weights.^2) < Np/3
+    if 1/sum(weights.^2) < N_tres
         epsilon = reshape(mvnrnd(zeros(nx,1), eye(nx), Np), 2, param.N, Np); % epsilon as defined in doc
         hopt = (4/(nx+2))^(1/(nx+4))*Np^(-1/(nx+4)); % optimal bandwidth of Gaussian kernel for dimension = 6
         Gamma = 1; %No whitening

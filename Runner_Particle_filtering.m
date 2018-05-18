@@ -18,7 +18,7 @@ param.dp=0.5;
 param.sigmaN=0.2;
 disp=0;
 
-sigmaObs=5;
+sigmaObs=1;
 Np = 200;
 runs = 15;
 
