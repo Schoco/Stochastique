@@ -13,6 +13,11 @@ function [y] = make_observations(param, x, sigmaObs)
 %   the function generate_bird_flocks
 %   sigmaObs is the standard deviation of the noise to be added.
 
+y = 
+for t = 1:param.itmax+1
+    for j = 1:param.N
+        
+    
 
 end
 

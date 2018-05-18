@@ -13,10 +13,11 @@ function [xout] = generate_bird_flocks(param, disp)
 x=zeros(2,param.itmax+1,param.N);
 x_point=zeros(2,param.itmax+1,param.N);
 %x_sec=zeros(2,param.itmax+1,param.N);
+
 x(2,1,:)=linspace(-5,5,param.N);
 x(1,1,:)=linspace(3,3,param.N);
 %x(2,1,:)=[1 3 7]%linspace(0,5,param.N);%rand([param.N,1])*40-20;%
-%x(1,1,:)=linspace(3,3,param.N);	+x(1,1,:)=[7 7 7]%linspace(5,5,param.N);%rand([param.N,1])*40-20;%
+%x(1,1,:)=linspace(3,3,param.N);
 
 %loop
 for i=1:param.itmax
