@@ -37,6 +37,7 @@ H=[1 0 0 0; 0 1 0 0];
 for j=1:param.N
 for i=1:param.itmax
     %Predict
+    %% Model use for the estimator
         norm_x = sqrt(x(i)^2+y(i)^2);
         norm_x_point = sqrt(xp(i)^2+yp(i)^2);
        % Fhome
@@ -65,7 +66,7 @@ for i=1:param.itmax
        x(i+1)=Xpaspoint(1);
        y(i+1)=Xpaspoint(2);
      
-    %Jacobian values
+    %% Jacobian values
     J1=1+param.ts^2/2*(4*param.rp/param.rf^2*(3*x(i+1)^2+y(i+1)^2-param.rf*(2*x(i+1)^2+y(i+1)^2)/sqrt(x(i+1)^2+y(i+1)^2)));
     J2=param.ts^2/2*4*param.rp/param.rf^2*(2*x(i+1)*y(i+1)-param.rf*(x(i+1)*y(i+1))/sqrt(x(i+1)^2+y(i+1)^2));
     J3=param.ts^2/2*param.vp*(1-(2*xp(i+1)^2+yp(i+1)^2)/(sqrt(xp(i+1)^2+yp(i+1)^2)*param.v0))+param.ts;
@@ -86,7 +87,7 @@ for i=1:param.itmax
     Jacobian=[J1 J2 J3 J4; J5 J6 J7 J8; J9 J10 J11 J12; J13 J14 J15 J16];
     PredictCov=Jacobian*PredictCov*Jacobian'+CovarMatrixProcess;
     
-    %Update the values
+    %% Update the values of the estimator and the covariance estimation
     yTilde=(Yobs{1,i})'-[x(i+1) y(i+1)];
     ResiduCov=H*PredictCov*H'+RCovObser;
     NearOptKal=PredictCov*H'*inv(ResiduCov);
