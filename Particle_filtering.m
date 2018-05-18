@@ -17,102 +17,127 @@ function [xf] = Particle_filtering(param, Np, y, sigmaObs, disp)
 %   xf is a cell of size param.N x (param.itmax + 1) containing vectors of
 %   size 2 x 1 giving the estimated (or filtered) position of each bird.
 
-mu_w = 0; %Mean for the observed value noise
-sqrt_sigmaObs = sqrt(sigmaObs); %Variance "" ""
-out_noise_pdf = @(w) 1/sqrt((2*pi)^d_y*abs(det(sigmaObs))) * exp(-.5*(w-mu_w)'*inv(sigmaObs)*(w-mu_w));  % pdf of the output noise w_t
+%% Parameters, play with them
 
-% *** SEQUENTIAL MONTE CARLO METHOD ***
+% none yet
 
-%% TODO : ! Must be redone, a single particle is, if I am right. in fact N bird, and the dimension
-% of a particle is 6
-nx = 6;
-n = Np;   % sample set size. Sugg: 1e2
-X = cell(n,param.itmax +1);   % particles will be stored in X
-Xtilde = cell(n,param.itmax +1);  % to store the predictions
-XPoint = cell(n,param.itmax +1);   % particles will be stored in X
-XtildePoint = cell(n,param.itmax +1);  % to store the predictions
+%% *** SEQUENTIAL MONTE CARLO METHOD ***
 
+nx = 6;   % dimension of our particles
+X = cell(Np,param.itmax +1);   % particles positions will be stored in X
+XPoint = cell(Np,param.itmax +1);	% particles velocities will be stored in XPoint
+XMean = cell(1, param.itmax +1);  % to store the mean of the predictions on position
+XPointMean = cell(1, param.itmax +1);  % to store the mean of the predictions on velocity
 
-% ** Generate initial sample set {x_0^i,...,x_0^n}:
-
-for i = 1:n
-  X{i,1} = [3 (10*rand(1,1)-5)];  % Initialize the first prediction to a random value on the x=3 axis
+% ** Step 1 : Initial prediction
+for i = 1:Np
+    X{i,1} = rand([2 param.N]).*40-20;  % the positions of the birds in each particle are uniformly distributed in the field of view
+    XPoint{i,1} = zeros(2, param.N); % the initial velocities of each bird in each particle are 0
 end
 
-% ** Start loop on time:
-
-for t = 1:param.itmax+1
-  
-  % ** Prediction
-    %Recomputation of the model
-  for i = 1:n
-      norm_x = norm(X{i,t});
-        norm_x_point = norm(XPoint{i,t});
-       % Fhome
-       if(0 <= norm_x && norm_x <= param.rf)
-         fhome=-4*param.rp/(param.rf^2)*norm_x*(norm_x-param.rf);
-       else
-          fhome=0;
-       end
-       Fhome=-X{i,t}*fhome;
-       
-	   % Fvel
-       Fvel=XPoint{i,t}*param.vp*(1-norm_x_point/param.v0);
-       
-	   % Finter
-       Finter=[0;0];
-       for inter=1:param.N
-           if (inter ~= j)
-               dist=norm(X{i,t}-X{inter,t});
-               if(dist<param.df)
-                 finter=-4*param.dp/((param.d0-param.df)^2)*(dist-param.d0)*(dist-param.df);
-               else
-                 finter=0;
-               end
-               Finter=(X{inter,t}-X{i,t})*finter+Finter;
-           end
-       end
-       
-	   % Noise
-	   Fnoise=randn([2 1])*param.sigmaN^2;
-       
-       %Compute next step
-       
-     XtildePoint{i,t+1}=param.ts*(Fhome+Fvel+Finter+Fnoise)+XPoint{i,t};
-    Xtilde{i,t+1} = param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*XPoint{i,t}+Fnoise*param.ts^3/3+param.ts*XPoint{i,t}+X{i,t}; 
-  end
-  
-  
-  % ** Correction
-  
-  %y = y_true(:,t+1);  % y is the true output at time t+1
-  
-  weights = zeros(1,n);
-  for i=1:n
-    weights(i) = out_noise_pdf(y{}-(Xtilde{i,t+1}));
-  end
+% ** Start of loop:
+for k = 1:param.itmax+1 %for each time step
     
-  %% TODO : Add the use of the velocity estimator
-  
-  % Resample the particles according to the weights:
-      % We are using Matlab
-      ind_sample = randsample(n,n,true,weights);
-
-  for i=1:n
-    XPoint{i,t+1} = XtildePoint{ind_sample(i),t+1};
-    X{i,t+1} = Xtilde{ind_sample(i),t+1};
-  end
-  
-  % If Neff < n/3, we use the regularized SMC
-  if 1/sum(weights.^2) < n/3
-        epsilon = mvnrnd(zeros(nx,1), eye(nx), n)'; % epsilon as defined in doc
-        hopt = (4/(nx+2))^(1/(nx+4))*n^(-1/(nx+4)); % optimal bandwidth of Gaussian kernel for dimension = 6
-        Gamma = real(sqrt(cov(xt'))); % TODO for cells
-        xt = xt + hopt*Gamma*epsilon; % TODO for cells
-  end
-  
-xf=X;
+    % ** Step 2: Compute Prediction at time step k from the previous time step k-1 for each particle
+    %Recomputation of the model
+    if k > 1 %We can not predict at k = 1
+        for i = 1:Np %for each particle
+            for b = 1:param.N %for each bird in the particle
+                norm_x = norm(X{i,k-1}(:,b));
+                norm_x_point = norm(XPoint{i,k-1}(:,b));
+                % Fhome
+                if(0 <= norm_x && norm_x <= param.rf)
+                    fhome=-4*param.rp/(param.rf^2)*norm_x*(norm_x-param.rf);
+                else
+                    fhome=0;
+                end
+                Fhome=-X{i,k-1}(:,b)*fhome;
+                
+                % Fvel
+                Fvel=XPoint{i,k-1}(:,b)*param.vp*(1-norm_x_point/param.v0);
+                
+                % Finter
+                Finter=[0;0];
+                for inter=1:param.N %for each other bird
+                    if (inter ~= b) %only for two distinct bird
+                        dist=norm(X{i,k-1}(:,b)-X{i,k-1}(:,inter));
+                        if(dist<param.df)
+                            finter=-4*param.dp/((param.d0-param.df)^2)*(dist-param.d0)*(dist-param.df);
+                        else
+                            finter=0;
+                        end
+                        Finter=(X{i,k-1}(:,inter)-X{i,k-1}(:,b))*finter+Finter;
+                    end
+                end
+                
+                % Noise
+                Fnoise=randn([2 1])*param.sigmaN^2;
+                
+                %Compute next step
+                XPoint{i,k}(:,b) = param.ts*(Fhome+Fvel+Finter+Fnoise)+XPoint{i,k-1}(:,b);
+                X{i,k}(:,b) = param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*XPoint{i,k-1}(:,b)+Fnoise*param.ts^3/3+X{i,k-1}(:,b);
+            end
+        end
+    end
+    %At this point we have computed the prediction at time step k for the Np particles
+    
+    % ** Step 3 : Compute the weights   
+    diff = zeros(2,param.N,Np);
+    state_dist = zeros(1,Np); 
+    weights = zeros(1,Np);
+    for i=1:Np
+        diff(:,:,i) = X{i,k} - cell2mat(y(:,k)'); % The difference between estimation and observation, as a 2x3, matrix
+        state_dist(i) = norm(sqrt(sum(diff(:,:,i).^2,1))); %computes the distance between two states, as the norm of the vector composed of the euclidean distances between each of the birds
+        weights(i) = normpdf(state_dist(i),0,sigmaObs); %we compute the weights
+    end
+    weights = weights ./ sum(weights); %Normalize ; Note: not needed when using randsample
+    
+    % ** Step 4 : Resample our particles using the weights
+    ind_sample = randsample(Np,Np,true,weights);
+    for i=1:Np
+        X{i,k} = X{ind_sample(i),k};
+        
+        %if we use the prediction, uncomment this and comment the lines under:
+        XPoint{i,k} = XPoint{ind_sample(i),k};
+        
+        %if we use the velocity estimator, uncomment this and comment the line above:
+%         if k > 1
+%             XPoint{i,k} = (cell2mat(y(:,k)') - cell2mat(y(:,k-1)'))./param.ts;
+%         else
+%             XPoint{i,k} = XPoint{ind_sample(i),k};
+%         end
+    end
+    
+    % ** Step 5 : Save the mean prediction after resampling, but before regularization
+    Xsum = zeros(2,param.N);
+    XPointsum = zeros(2,param.N);
+    for i = 1:Np %for each particle
+        Xsum = Xsum + X{i,k};
+        XPointsum = XPointsum + XPoint{i,k};
+    end
+    XMean{k} = Xsum ./ Np;
+    XPointMean{k} = XPointsum ./ Np;
+    
+    % ** Step 6 : Regularize by adding noise
+    % If Neff < n/3, we use the regularized SMC
+    if 1/sum(weights.^2) < Np/3
+        epsilon = reshape(mvnrnd(zeros(nx,1), eye(nx), Np), 2, param.N, Np); % epsilon as defined in doc
+        hopt = (4/(nx+2))^(1/(nx+4))*Np^(-1/(nx+4)); % optimal bandwidth of Gaussian kernel for dimension = 6
+        Gamma = 1; %No whitening
+        for i = 1:Np
+            X{i,k} = X{i,k} + hopt*Gamma*epsilon(:,:,i); % add small error
+        end
+    end
+    
 end  % for t
+
+% We want xf to be a N * itermax+1 cell array
+xf = cell(param.N, param.itmax+1);
+for i=1:param.itmax+1
+   for n=1:param.N
+      xf{n,i} =  XMean{i}(:,n);
+   end
+end
 
 if(disp)
     main = figure(1);
@@ -120,9 +145,9 @@ if(disp)
     axis([-20 20 -20 20])
     plot(0,0,'or', 'MarkerFaceColor', 'r');
     h = zeros(3,1);
-    for i2=1:param.itmax
-            for j2=1:param.N
-                h(j2) = plot(y{j2,i2},y(2,i2,j2),'*k');
+    for k=1:param.itmax
+            for n=1:param.N
+                h(n) = plot(xf{n,k}(1),xf{n,k}(2),'*k');
             end
         pause(10/100)
         delete(h);
