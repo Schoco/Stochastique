@@ -17,19 +17,19 @@ function [xf] = Kalman_filtering(param,Np,Yobs,sigmaObs,disp)
 %   size 2 x 1 giving the estimated (or filtered) position of each bird.
 xf=cell(param.N,param.itmax);
 %Covariance matrix of the process
-CovarMatrixProcess=[param.sigmaN*param.ts^3/3 0 param.sigmaN*param.ts^2/2 0; 0 param.sigmaN*param.ts^3/3 0 param.sigmaN*param.ts^2/2;...
-    param.sigmaN*param.ts^2/2 0 param.sigmaN*param.ts 0;0 param.sigmaN*param.ts^2/2 0 param.sigmaN*param.ts];
+CovarMatrixProcess=[param.sigmaN^2*param.ts^3/3 0 param.sigmaN^2*param.ts^2/2 0; 0 param.sigmaN^2*param.ts^3/3 0 param.sigmaN^2*param.ts^2/2;...
+    param.sigmaN^2*param.ts^2/2 0 param.sigmaN^2*param.ts 0;0 param.sigmaN^2*param.ts^2/2 0 param.sigmaN^2*param.ts];
 %Covariance matrix of the observation
 RCovObser=[sigmaObs^2 0;0 sigmaObs^2];
 %First Predicted covariance
 PredictCov=eye(4);
 %Initialize the estimator
-x=linspace(0,0,param.itmax+1);
-y=linspace(0,0,param.itmax+1);
+x=linspace(1,1,param.itmax+1);
+y=linspace(1,1,param.itmax+1);
 xp=linspace(0,0,param.itmax+1);
 yp=linspace(0,0,param.itmax+1);
 x(1)=3;y(1)=rand*10-5;
-xp=0.00001;yp=0.000001;
+xp=0.1;yp=0.1;
 
 %Observation operation here identity  but we only observe x and y and not
 %xpoint ypoint
@@ -57,7 +57,7 @@ for i=1:param.itmax
        %noiserecord=zeros([2 1]);
       
        %Compute next step
-       size( param.ts*(Fhome+Fvel+Fnoise')+[xp(i) yp(i)])
+
        Xpoint = param.ts*(Fhome+Fvel+Fnoise')+[xp(i) yp(i)];
        xp(i+1)=Xpoint(1);  %Bcos Matlab doesn't what double assignement
        yp(i+1)=Xpoint(2);
@@ -101,7 +101,7 @@ for i=1:param.itmax
 end
 xf{1,1}=[x(1) y(1)];
 end
-if(disp) %Display the estimator (black) and the truc val (blue))
+if(disp) %Display the estimator (black) and the true val (blue))
     
     for i2=1:param.itmax
             for j2=1:param.N
