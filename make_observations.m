@@ -13,11 +13,14 @@ function [y] = make_observations(param, x, sigmaObs)
 %   the function generate_bird_flocks
 %   sigmaObs is the standard deviation of the noise to be added.
 
-y = 
+%init
+y = cell(param.N, param.itmax + 1);
+
 for t = 1:param.itmax+1
-    for j = 1:param.N
-        
-    
+    for n = 1:param.N
+        y{n,t}=x{n,t}+sigmaObs^2*randn([2 1]); %Add noise on real position to get the observed position
+    end
+end
 
 end
 

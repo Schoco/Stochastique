@@ -1,5 +1,13 @@
-%%Stochastique
-RunnerNum=1;
+% -----
+% LINMA 1731 - Project
+% Authors: ALEXE Simon & SCHOVAERS Corentin
+% Date: 18 May 2018
+% -----
+
+function [xout] = Runner(RunnerNum)
+%Runner runs both our simulation and the video example of one of the
+%parameters set
+%	RunnerNum one of the three parameter set (1, 2 or 3)
 if(RunnerNum==1)
     param.N=3;
     param.itmax=150;
@@ -16,7 +24,7 @@ if(RunnerNum==1)
     figure(2);
     load('video_1.mat');
     movie(gcf,Fr);
-    generate_bird_flocks(param,disp);
+    xout = generate_bird_flocks(param,disp);
     
 elseif(RunnerNum==2) 
     param.N=3;
@@ -31,13 +39,12 @@ elseif(RunnerNum==2)
     param.dp=3;
     param.sigmaN=2;
     disp=1;
-        figure(2);
+	xout = generate_bird_flocks(param,disp);
+    figure(2);
     load('video_2.mat')
     movie(gcf,Fr)
-    generate_bird_flocks(param,disp);
 
-
-else
+elseif(RunnerNum==3)
     param.N=3;
     param.itmax=150;
     param.ts=0.1;
@@ -50,9 +57,11 @@ else
     param.dp=0.2;
     param.sigmaN=10;
     disp=1;
-    generate_bird_flocks(param,disp);
+    xout = generate_bird_flocks(param,disp);
     figure(2);
     load('video_3.mat')
     movie(gcf,Fr)
-
+	
+else
+	'Parameter RunnerNum has an unknown value.'
 end

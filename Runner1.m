@@ -17,4 +17,4 @@ param.df=6;
 param.dp=0.5;
 param.sigmaN=0.2;
 disp=1;
-generate_bird_flocks(param,disp);
+xout = generate_bird_flocks(param,disp);

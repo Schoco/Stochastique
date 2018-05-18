@@ -23,7 +23,7 @@ out_noise_pdf = @(w) 1/sqrt((2*pi)^d_y*abs(det(sigmaObs))) * exp(-.5*(w-mu_w)'*i
 
 % *** SEQUENTIAL MONTE CARLO METHOD ***
 
-%% TODO : ! Must be redone, a single particle is, if I am right. in fact N bird, and the dimension
+% ! Must be redone, a single particle is in fact N bird, and the dimension
 % of a particle is 6
 nx = 6;
 n = Np;   % sample set size. Sugg: 1e2
@@ -92,7 +92,7 @@ for t = 1:param.itmax+1
     weights(i) = out_noise_pdf(y{}-(Xtilde{i,t+1}));
   end
     
-  %% TODO : Add the use of the velocity estimator
+  %TODO 
   
   % Resample the particles according to the weights:
       % We are using Matlab
