@@ -1,4 +1,10 @@
-%%Stochastique
+% -----
+% LINMA 1731 - Project
+% Authors: ALEXE Simon & SCHOVAERS Corentin
+% Date: 18 May 2018
+% -----
+
+% These is the 3rd proposed set of parameters.
 param.N=3;
 param.itmax=150;
 param.ts=0.1;

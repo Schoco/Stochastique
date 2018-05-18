@@ -1,10 +1,23 @@
+% -----
+% LINMA 1731 - Project
+% Authors: ALEXE Simon & SCHOVAERS Corentin
+% Date: 18 May 2018
+% -----
+
 function [xout] = generate_bird_flocks(param, disp)
+%generate_bird_flocks generates bird flocks.
+%	param is the same vector as defined in State model
+%	set disp to 1 to see an animation of the positions, 0 otherwise
+
+%init
 x=zeros(2,param.itmax+1,param.N);
 x_point=zeros(2,param.itmax+1,param.N);
 %x_sec=zeros(2,param.itmax+1,param.N);
-%init
 x(2,1,:)=linspace(-5,5,param.N);
 x(1,1,:)=linspace(3,3,param.N);
+%x(2,1,:)=[1 3 7]%linspace(0,5,param.N);%rand([param.N,1])*40-20;%
+%x(1,1,:)=linspace(3,3,param.N);	+x(1,1,:)=[7 7 7]%linspace(5,5,param.N);%rand([param.N,1])*40-20;%
+
 %loop
 for i=1:param.itmax
    for j=1:param.N
@@ -44,6 +57,7 @@ for i=1:param.itmax
        %Compute next step
        x_point(:,i+1,j)=param.ts*(Fhome+Fvel+Finter+Fnoise)+x_point(:,i,j);
        x(:,i+1,j)=param.ts^2/2*(Fhome+Fvel+Finter)+param.ts*x_point(:,i+1,j)+Fnoise*param.ts^3/3+param.ts*x_point(:,i,j)+x(:,i,j); 
+       
    end
 end
 
@@ -57,11 +71,18 @@ if(disp)
             for j2=1:param.N
                 h(j2) = plot(x(1,i2,j2),x(2,i2,j2),'*k');
             end
-        pause(5/100)
+        pause(10/100)
         delete(h);
     end
     hold off
     close(main)
 end
-xout=x;
+
+xout=cell(param.N,param.itmax+1);
+for celli=1:param.itmax+1
+    for cellj=1:param.N
+        xout{cellj,celli}=x(:,celli,cellj);
+    end
+end
+
 end

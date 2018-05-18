@@ -1,3 +1,9 @@
+% -----
+% LINMA 1731 - Project
+% Authors: ALEXE Simon & SCHOVAERS Corentin
+% Date: 18 May 2018
+% -----
+
 function [xf] = Kalman_filtering(param,Np,y,sigmaObs,disp)
 %Kalman_filtering Kalman filtering to estimate the position of the birds. 
 %   param is the same vector as defined in State model
